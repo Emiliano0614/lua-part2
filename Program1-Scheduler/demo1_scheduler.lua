@@ -7,15 +7,18 @@
 -- Time is a VIRTUAL clock, so output is instant and identical every run.
 
 ------------------------------------------------------------------
--- 1. The scheduler (this is the part we wrote ourselves)
+-- 1. The scheduler 
 ------------------------------------------------------------------
+-- Creates a empty lua table
 local Scheduler = {}
 Scheduler.__index = Scheduler
 
+-- Using tables and metatables to create something similar to a class
 function Scheduler.new()
     return setmetatable({ clock = 0, tasks = {} }, Scheduler)
 end
 
+-- Adds task to our scheduler 
 function Scheduler:spawn(name, body)
     table.insert(self.tasks, {
         name   = name,
@@ -39,6 +42,7 @@ function Scheduler:run()
         -- jump the virtual clock forward to that task's wake-up time
         self.clock = math.max(self.clock, nextTask.wakeAt)
 
+        --runs task until it pauses or finishes
         local ok, delay = coroutine.resume(nextTask.co)
         if not ok then
             error(nextTask.name .. " crashed: " .. tostring(delay))
